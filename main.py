@@ -1,3 +1,2 @@
-def summary(a, b):
-    c = a + b
-    return c
+def sunnary(a, b):
+    return a + b
