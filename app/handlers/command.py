@@ -11,7 +11,8 @@ from aiogram.types import (
 
 from app.config.logging import logger
 
-from app.models.test import  Game, Player
+from app.models.game import Game
+from app.models.players import Player
 
 router = Router()
 
@@ -19,16 +20,16 @@ GAME_START = 60
 
 games = {}
 players = []
-
+id
 
 @router.message(Command("game"))
 async def join_game(message: Message):
     chat_id = message.chat.id
-    user_id = message.from_user.id
+    id = message.from_user.id
     user_name = message.from_user.full_name
 
-    if user_id not in players:
-        players.append(Player(user_id, user_name))
+    if id not in players:
+        players.append(Player(id, user_name))
     else:
         await message.answer("Ви вже у грі!", show_alert=True)
 
@@ -124,7 +125,8 @@ async def join_game(message: Message):
 @router.callback_query(lambda c: c.data in ["join", "leave"])
 async def join_or_leave_game(query: CallbackQuery):
     chat_id = query.message.chat.id
-    user = query.from_user
+    # user = query.from_user
+    user_name = query.from_user.full_name
     user_id = query.from_user.id
 
     if chat_id not in games:
@@ -138,9 +140,9 @@ async def join_or_leave_game(query: CallbackQuery):
 
         if query.data == "join":
             if not is_join:
-                game_players.append(Player(user_id, user.full_name))
+                game_players.append(Player(user_id, user_name))
                 await query.answer("Ви приєдналися до гри!", show_alert=True)
-                logger.info(f"Гравець {user.full_name} приєднався до гри в чаті {chat_id}")
+                logger.info(f"Гравець {user_name} приєднався до гри в чаті {chat_id}")
             else:
                 await query.answer("Ви вже у грі!", show_alert=True)
 
