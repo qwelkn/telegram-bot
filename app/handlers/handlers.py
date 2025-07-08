@@ -4,7 +4,6 @@ from aiogram.types import (InlineKeyboardMarkup,
                            InlineKeyboardButton, 
                            CallbackQuery,
                            Message)
-from app.keyboards.keyboards import menu_profile, mafia_buttons
 
 router = Router()
 
@@ -18,11 +17,9 @@ async def menu(message: Message):
         "💵 Гривні: 7340 \n" 
         "💰 Золото Полуботка: 0"
     )
-    await message.answer("text", reply_markup=menu_profile)
+    await message.answer("text")
 
-@router.message(Command("test"))
-async def test(message: Message):
-    await message.answer("text",reply_markup=mafia_buttons)
+
 
 @router.message(Command("game"))
 async def join_game(message: Message):

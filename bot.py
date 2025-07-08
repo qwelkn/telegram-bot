@@ -3,11 +3,9 @@ import os
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
-# from app.handlers.handlers import join_game
 
-import test
 
-from app.handlers import command
+from app.handlers import command, private
 # from app.handlers import handlers
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -20,10 +18,10 @@ dp = Dispatcher(storage=storage)
 async def set_commands(bot: Bot) -> None:
     commands = [
         BotCommand(command="start", description="Start working with bot"),
-        BotCommand(command="menu", description="Show menu"),
         BotCommand(command="help", description="Get help"),
-        BotCommand(command="profile", description="profile"),
         BotCommand(command="game", description="Start game"),
+        BotCommand(command="profile", description="My profile"),
+        BotCommand(command="bag", description="My bag"),
     ]
     await bot.set_my_commands(commands)
 
@@ -41,7 +39,7 @@ async def main() -> None:
     try:
         # dp.include_router(handlers.router)
         dp.include_router(command.router)
-        dp.include_router(test.router)
+        dp.include_router(private.router)
         # setup_logging()
 
         # First clear old updates

@@ -50,9 +50,18 @@ class Achive(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(127))
     task: Mapped[str]
+    cost: Mapped[int]
 
 class UserAchive(Base):
     __tablename__ = "user-achive"
     id: Mapped[int] = mapped_column(primary_key=True)
     user: Mapped[int] = mapped_column(ForeignKey("user_acount"))
     achive: Mapped[int] = mapped_column(ForeignKey("achive"))
+
+class Profile(Base):
+    __tablename__ = "user-achive"
+    play_game: Mapped[int]
+    win_game: Mapped[int]
+    task_completed: Mapped[int]
+    achive: Mapped[str]
+    rank: Mapped[str]
