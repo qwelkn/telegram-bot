@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import BigInteger
 
 
@@ -7,63 +7,70 @@ class Base(DeclarativeBase):
     pass
 
 
-class Bag(Base):
-    __tablename__ = "user_bag"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    protection: Mapped[int]
-    docs: Mapped[int]
-    taxi: Mapped[int]
-    mina: Mapped[int]
-
-
 class User(Base):
-    __tablename__ = "user_account"
+    __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
-    tg_id: Mapped[int] = mapped_column(BigInteger)
+    tg_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     fullname: Mapped[str] = mapped_column(String(127))
-    coins: Mapped[int]
-    diamonts: Mapped[int]
-    bag_id: Mapped[int] = mapped_column(ForeignKey("user_bag.id"))
-    play_game: Mapped[int]
-    win_game: Mapped[int]
-    los_game: Mapped[int]
+    coins: Mapped[int] = mapped_column(default=0)
+    diamonds: Mapped[int] = mapped_column(default=0)
+    games_played: Mapped[int] = mapped_column(default=0)
+    games_won: Mapped[int] = mapped_column(default=0)
+    games_lost: Mapped[int] = mapped_column(default=0)
+
+    bag = relationship("Bag", back_populates="user", uselist=False)
+    achievements = relationship("UserAchievement", back_populates="user")
+    groups = relationship("UserGroup", back_populates="user")
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
+        return f"User(id={self.id!r}, tg_id={self.tg_id!r}, fullname={self.fullname!r})"
+
+
+class Bag(Base):
+    __tablename__ = "bags"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    protection: Mapped[int] = mapped_column(default=0)
+    docs: Mapped[int] = mapped_column(default=0)
+    taxi: Mapped[int] = mapped_column(default=0)
+    mina: Mapped[int] = mapped_column(default=0)
+
+    user = relationship("User", back_populates="bag")
 
 
 class Group(Base):
     __tablename__ = "groups"
     id: Mapped[int] = mapped_column(primary_key=True)
-    chat_id: Mapped[int] = mapped_column(BigInteger)
+    chat_id: Mapped[int] = mapped_column(BigInteger, unique=True)
+
+    members = relationship("UserGroup", back_populates="group")
 
 
 class UserGroup(Base):
-    __tablename__ = "user-group"
+    __tablename__ = "user_groups"
     id: Mapped[int] = mapped_column(primary_key=True)
-    user: Mapped[int] = mapped_column(ForeignKey("user_acount"))
-    group: Mapped[int] = mapped_column(ForeignKey("groups"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"))
+
+    user = relationship("User", back_populates="groups")
+    group = relationship("Group", back_populates="members")
 
 
-class Achive(Base):
-    __tablename__ = "achive"
+class Achievement(Base):
+    __tablename__ = "achievements"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(127))
-    task: Mapped[str]
-    cost: Mapped[int]
+    description: Mapped[str] = mapped_column(String(255))
+    cost: Mapped[int] = mapped_column(default=0)
+
+    users = relationship("UserAchievement", back_populates="achievement")
 
 
-class UserAchive(Base):
-    __tablename__ = "user-achive"
+class UserAchievement(Base):
+    __tablename__ = "user_achievements"
     id: Mapped[int] = mapped_column(primary_key=True)
-    user: Mapped[int] = mapped_column(ForeignKey("user_acount"))
-    achive: Mapped[int] = mapped_column(ForeignKey("achive"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    achievement_id: Mapped[int] = mapped_column(ForeignKey("achievements.id"))
 
-
-class Profile(Base):
-    __tablename__ = "user-achive"
-    play_game: Mapped[int]
-    win_game: Mapped[int]
-    task_completed: Mapped[int]
-    achive: Mapped[str]
-    rank: Mapped[str]
+    user = relationship("User", back_populates="achievements")
+    achievement = relationship("Achievement", back_populates="users")
