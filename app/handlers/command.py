@@ -1,16 +1,15 @@
 import asyncio
 
-from aiogram import Router, F
-from aiogram.filters import CommandStart, Command
+from aiogram import F, Router
+from aiogram.filters import Command
 from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
     CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
 )
 
 from app.config.logging import logger
-
 from app.models.game import Game
 from app.models.players import Player
 
@@ -21,6 +20,7 @@ GAME_START = 60
 games = {}
 players = []
 id
+
 
 @router.message(Command("game"))
 async def join_game(message: Message):
@@ -33,12 +33,10 @@ async def join_game(message: Message):
     else:
         await message.answer("Ви вже у грі!", show_alert=True)
 
-
     if chat_id not in games:
         games.setdefault(chat_id, Game(chat_id, []))
 
-
-    keyboard=InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="Приєднатися", callback_data="join_game")],
             [InlineKeyboardButton(text="Вийти з гри", callback_data="leave")],
@@ -58,7 +56,13 @@ async def join_game(message: Message):
             try:
                 # current_players = games[chat_id].players
                 current_players = [player.name for player in games[chat_id].players]
-                players_text = (",".join([f"[{player.name}](tg://user?id={player.user_id})" for player in games[chat_id].players])
+                players_text = (
+                    ",".join(
+                        [
+                            f"[{player.name}](tg://user?id={player.user_id})"
+                            for player in games[chat_id].players
+                        ]
+                    )
                     if games[chat_id].players
                     else "Поки що ніхто не приєднався"
                 )
@@ -69,12 +73,16 @@ async def join_game(message: Message):
                     inline_keyboard=[
                         [
                             InlineKeyboardButton(
-                                text="Покинути гру"
-                                if message.from_user.full_name in current_players
-                                else "Приєднатися",
-                                callback_data="leave"
-                                if message.from_user.full_name in current_players
-                                else "join",
+                                text=(
+                                    "Покинути гру"
+                                    if message.from_user.full_name in current_players
+                                    else "Приєднатися"
+                                ),
+                                callback_data=(
+                                    "leave"
+                                    if message.from_user.full_name in current_players
+                                    else "join"
+                                ),
                             )
                         ],
                     ]
@@ -84,7 +92,8 @@ async def join_game(message: Message):
                     f"{emoji} Збір гравців розпочато!\n"
                     f"Залишився час: {remaining_time} секунд\n\n"
                     f"Список гравців:\n{players_text}",
-                    reply_markup=keyboard, parse_mode="Markdown",
+                    reply_markup=keyboard,
+                    parse_mode="Markdown",
                 )
                 await asyncio.sleep(1)
             except Exception as edit_error:
@@ -92,17 +101,18 @@ async def join_game(message: Message):
                     raise edit_error
                 await asyncio.sleep(1)
 
-
         # Таймер завершено
         players_count = len(games[chat_id].players)
 
         keyboard_role = InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [
-                            InlineKeyboardButton(text="Отримати роль", callback_data="random_role")
-                        ],
-                    ]
-                )
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="Отримати роль", callback_data="random_role"
+                    )
+                ],
+            ]
+        )
 
         if players_count < 4:
             await message.answer(
@@ -114,7 +124,8 @@ async def join_game(message: Message):
                 f"Час збору завершено!\n"
                 f"Усього гравців: {players_count}\n\n"
                 f"Список гравців:\n{players_text}",
-                reply_markup=keyboard_role, parse_mode="Markdown",
+                reply_markup=keyboard_role,
+                parse_mode="Markdown",
             )
 
     except Exception as e:
@@ -122,7 +133,8 @@ async def join_game(message: Message):
         await message.answer("Сталася помилка при створенні гри!")
         games.pop(chat_id, None)
 
-@router.callback_query(lambda c: c.data in ["join", "leave"])
+
+@router.callback_query(F.data == "join" or F.data == "leave")
 async def join_or_leave_game(query: CallbackQuery):
     chat_id = query.message.chat.id
     # user = query.from_user
@@ -148,7 +160,9 @@ async def join_or_leave_game(query: CallbackQuery):
 
         elif query.data == "leave":
             if is_join:
-                games[chat_id].players = [player for player in game_players if player.user_id != user_id]
+                games[chat_id].players = [
+                    player for player in game_players if player.user_id != user_id
+                ]
                 await query.answer("Ви покинули гру!", show_alert=True)
             else:
                 await query.answer("Вас немає у грі!", show_alert=True)
@@ -157,7 +171,8 @@ async def join_or_leave_game(query: CallbackQuery):
         logger.error(f"Помилка при обробці дії гравця: {e}")
         await query.answer("Сталася помилка!", show_alert=True)
 
-@router.callback_query(lambda c: c.data == "random_role")
+
+@router.callback_query(F.data == "random_role")
 async def get_role(query: CallbackQuery):
     chat_id = query.message.chat.id
     # user_id = query.from_user.id
@@ -171,4 +186,3 @@ async def get_role(query: CallbackQuery):
         await query.answer(f"Твоя роль: {role}", show_alert=True)
         # elif player.user_id != user_id:
         #     await query.answer("Ти не є учасником гри", show_alert=True)
-    

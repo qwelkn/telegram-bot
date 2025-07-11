@@ -1,12 +1,10 @@
-import asyncio
-
-from aiogram import Router, F
-from aiogram.filters import CommandStart, Command
+from aiogram import F, Router
+from aiogram.filters import Command, CommandStart
 from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
     CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
 )
 
 router = Router()
@@ -19,34 +17,34 @@ async def command_start(message: Message):
         return
     await message.answer("Вітаю у мафії!")
 
+
 @router.message(Command("profile"))
 async def profile(message: Message):
     user_name = message.from_user.full_name
 
     text = (
         f"👤 {user_name} \n"
-        "Зіграно ігор: 10\n" 
+        "Зіграно ігор: 10\n"
         "Переможено ігор: 7\n"
         "Виконано завдань: \n"
         "Нагороди: \n"
         "Ранг: початківець\n"
     )
-    await message.answer(text, reply_markup=InlineKeyboardMarkup(
-        inline_keyboard = [
-        [
-            InlineKeyboardButton(text="Завдання", callback_data="task")     
-        ]
-        ]
-    )
+    await message.answer(
+        text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Завдання", callback_data="task")]
+            ]
+        ),
     )
 
-@router.callback_query(lambda c: c.data == "task")
+
+@router.callback_query(F.data == "task")
 async def task(query: CallbackQuery):
-    text= (
-        "Твоє завдання сьогодні: \n"
-        "Виграти за мафію два рази"
-    )
+    text = "Твоє завдання сьогодні: \nВиграти за мафію два рази"
     await query.answer(text, show_alert=True)
+
 
 @router.message(Command("bag"))
 async def bag(message: Message):
@@ -54,7 +52,7 @@ async def bag(message: Message):
     if message.chat.type != "private":
         await message.answer("Ця команда використовується лише у чаті з ботом")
         return
-    
+
     text = (
         f"👤 {user_name} \n"
         "Гроші: 700\n"
@@ -65,19 +63,25 @@ async def bag(message: Message):
         "Таксі: 0"
     )
 
-    await message.answer(text, reply_markup=InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-            InlineKeyboardButton(text="Купити діаманти", callback_data="buy_diamants"),
-            InlineKeyboardButton(text="Магазин", callback_data="shop"),
+    await message.answer(
+        text,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="Купити діаманти", callback_data="buy_diamants"
+                    ),
+                    InlineKeyboardButton(text="Магазин", callback_data="shop"),
+                ]
             ]
-        ]
+        ),
     )
-    )
+
 
 @router.message(Command("buy_diamants"))
 async def buy_diamants(message: Message):
     pass
+
 
 @router.message(Command("shop"))
 async def shop(message: Message):

@@ -1,11 +1,12 @@
 import asyncio
 import os
-from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand
-from aiogram.fsm.storage.memory import MemoryStorage
 
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand
 
 from app.handlers import command, private
+
 # from app.handlers import handlers
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")

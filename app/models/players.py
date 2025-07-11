@@ -3,5 +3,5 @@ class Player:
         self.user_id = user_id
         self.name = name
         self.role = None
-        self.is_alive = True 
+        self.is_alive = True
         self.votes = 0
